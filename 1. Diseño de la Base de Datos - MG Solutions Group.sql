@@ -327,7 +327,7 @@ GO
 		en el ingreso de datos de la tabla compra, para evitar un problema en el
 		tipo de cambio
 		Ya que SQLServer no permite subconsultas en la restriccion CHECK
-		se tuvo la necesidad de crear una funcion en esta parte de diseño de la BD
+		se tuvo la necesidad de crear una funcion en esta parte de diseï¿½o de la BD
 	*/
 
 	CREATE OR ALTER FUNCTION udf_NombreMoneda
@@ -432,65 +432,6 @@ GO
 	)
 	GO
 
-	CREATE OR ALTER FUNCTION udf_CalcularImporteTotalIDVenta
-	(
-		@id_venta INT
-	)
-	RETURNS MONEY
-	AS
-	BEGIN
-		DECLARE @ImporteTotal MONEY = 0
-		DECLARE @ImporteTotalItem MONEY = 
-			(
-				SELECT ISNULL(SUM(DVG.precioUnitario*DVG.cantidad), 0) FROM DetalleVentaGeneral  AS DVG 
-			)
-		DECLARE @ImporteTotalServicio MONEY =
-			(
-				SELECT ISNULL(SUM(DVG.precioUnitario*DVG.cantidad), 0) FROM DetalleVentaGeneral  AS DVG
-			)
-
-		SET @ImporteTotal = @ImporteTotalItem + @ImporteTotalServicio
-		RETURN @ImporteTotal
-	END
-	GO
-
-	CREATE OR ALTER FUNCTION udf_CalcularOperacionesGravadas_idVenta
-	(
-		@id_venta INT
-	)
-	RETURNS MONEY
-	AS
-	BEGIN
-		DECLARE @OperacionesGravadas MONEY = 0
-		DECLARE @ImporteTotal MONEY = 
-			(
-				SELECT Venta.importeTotal FROM Venta
-				WHERE Venta.id_venta = @id_venta
-			)
-		SET @OperacionesGravadas = ISNULL(@ImporteTotal, 0)/1.18
-		RETURN @OperacionesGravadas
-	END
-	GO
-
-	CREATE OR ALTER FUNCTION udf_CalcularTotalIGV_idVenta
-	(
-		@id_venta INT
-	)
-	RETURNS MONEY
-	AS
-	BEGIN
-		DECLARE @totalIGV MONEY = 0
-
-		DECLARE @OperacionesGravadas MONEY = 
-			(
-				SELECT Venta.operacionesGravadas FROM Venta
-				WHERE Venta.id_venta = @id_venta
-			)
-		SET @totalIGV = ISNULL(@OperacionesGravadas, 0)*0.18
-		RETURN @totalIGV
-	END
-	GO
-
 	CREATE TABLE Venta
 	(
 		id_venta INT IDENTITY(1,1) PRIMARY KEY,
@@ -503,10 +444,7 @@ GO
 		fechaVencimiento DATETIME2 NOT NULL DEFAULT GETDATE(),
 		fechaPago DATETIME2 NOT NULL DEFAULT GETDATE(),
 		id_moneda INT,
-		importeTotal AS dbo.udf_CalcularImporteTotalIDVenta(id_venta),
-		operacionesGravadas AS dbo.udf_CalcularOperacionesGravadas_idVenta(id_venta),
 		operacionesNoGravadas MONEY NOT NULL DEFAULT 0,
-		totalIGV AS dbo.udf_CalcularTotalIGV_idVenta(id_venta),
 		id_tipoEstado INT,
 		UNIQUE (serie, numeroComprobante),
 		FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario),

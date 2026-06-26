@@ -8,6 +8,41 @@ USE MGSolutionsGroup
 GO
 
 -- Creamos las vistas de la base de datos
+
+	-- [*] Creamos la vista udv_TopClientes
+
+	CREATE OR ALTER VIEW udv_VentaDetallada
+	AS
+	WITH Subtotales AS (
+		SELECT 
+			id_venta,
+			CAST(ISNULL(SUM(precioUnitario * cantidad), 0) AS DECIMAL(18,4)) AS ImporteTotalNumerico
+		FROM DetalleVentaGeneral
+		GROUP BY id_venta
+	)
+	SELECT 
+		V.id_venta,
+		V.id_usuario,
+		V.documentoCliente,
+		V.id_tipoComprobante,
+		V.serie,
+		V.numeroComprobante,
+		V.fechaEmision,
+		V.fechaVencimiento,
+		V.fechaPago,
+		V.id_moneda,
+		V.id_tipoEstado,
+		V.operacionesNoGravadas,
+		
+		CAST(S.ImporteTotalNumerico AS MONEY) AS importeTotal,
+		
+		CAST(ROUND(S.ImporteTotalNumerico / 1.18, 2) AS MONEY) AS operacionesGravadas,
+		
+		CAST(S.ImporteTotalNumerico - ROUND(S.ImporteTotalNumerico / 1.18, 2) AS MONEY) AS totalIGV
+
+	FROM Venta V
+	LEFT JOIN Subtotales S ON V.id_venta = S.id_venta
+	GO
 	
 	-- [*] Creamos la vista udv_TopClientes
 
@@ -18,7 +53,7 @@ GO
 		C.nombre,
 		C.documento,
 		ISNULL(SUM(importeTotal), 0)
-		FROM Venta AS V
+		FROM udv_VentaDetallada AS V
 		INNER JOIN Cliente AS C
 		ON V.documentoCliente =  C.documento
 		GROUP BY C.nombre, C.documento, C.id_cliente

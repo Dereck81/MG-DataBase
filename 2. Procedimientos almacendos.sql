@@ -18,7 +18,7 @@ GO
 		@serie VARCHAR(4),
 		@numeroComprobante VARCHAR(15),
 		@fechaEmision DATETIME2,
-		@fechaVencimiento DATETIME,
+		@fechaVencimiento DATETIME2,
 		@fechaPago DATETIME2,
 		@id_moneda INT,
 		@id_tipoEstado INT,
@@ -132,7 +132,7 @@ GO
 			END
 			ELSE
 			BEGIN
-				RAISERROR('No se pudo agregar un registro más a la venta, verifique los datos ingresados y las restricciones de la tabla DetalleVentaGeneral', 15, 1)
+				RAISERROR('No se pudo agregar un registro mï¿½s a la venta, verifique los datos ingresados y las restricciones de la tabla DetalleVentaGeneral', 15, 1)
 				RETURN
 			END
 			COMMIT
@@ -171,7 +171,7 @@ GO
 									Empleado.DNI,
 									'@mgsolutionsgroup.com'
 								)
-							), 'áéíóúüñ', 'aeiouun')
+							), 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½', 'aeiouun')
 			FROM Empleado WHERE Empleado.id_empleado = @id_empleado
 
 			INSERT INTO Usuario (id_tipoUsuario, id_empleado, email, apiToken) 
